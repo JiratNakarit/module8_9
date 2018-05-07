@@ -415,6 +415,10 @@ def get_rpy(cor_l=[], scene='l'):
         return[pi, 0 ,angle]
 
 def pack_data(ca_l=[], pos_l=[], cor_l=[], rw_l=[], dat_pack=[], scene='l'):
+    if rw_l:
+        for counter in range(len(rw_l)):
+            rw_l[counter][0] = rw_l[counter][0] * -1
+            rw_l[counter][1] = rw_l[counter][1] * -1
     for counter, i in enumerate(pos_l):
         usable = True
         realworld = [j*1000 for j in rw_l[counter]]
@@ -423,7 +427,7 @@ def pack_data(ca_l=[], pos_l=[], cor_l=[], rw_l=[], dat_pack=[], scene='l'):
             for pack in dat_pack:
                 distance =find_distance(pack[0], realworld)
                 print(distance, counter)
-                if distance <= 75:
+                if distance <= 105:
                     usable = False
                     print('Unusable: Duplicate card.')
                     break
