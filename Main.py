@@ -54,9 +54,9 @@ def cam_clf(DATA_PACK,brl,pt):
     # same as realworldlist but it using 4 points of conner
     cornerworldlist = convert_pos(cornerlist, newcammtx, homo, mode=0, inverse=False)
 
-    # data_pack include 1.cardlist is class og each card, 2.midpointlist is useless, 3.cornerworldlist is cornerworldlist
-    #                   4.realworldlist is realworldlist, 5.data_pack (it will send to MATLAB later) 6.parameter that tell scene
-    data_pack = pack_data(cardlist, midpointlist, cornerworldlist, realworldlist, DATA_PACK, brl)
+    # data_pack include 1.cardlist is class og each card, 2.cornerworldlist is cornerworldlist
+    #                   3.realworldlist is realworldlist, 4.data_pack (it will send to MATLAB later) 5.parameter that tell scene
+    data_pack = pack_data(cardlist, cornerworldlist, realworldlist, DATA_PACK, brl)
     return data_pack
 
 # Variable _____________________________________________________________________________________________________________

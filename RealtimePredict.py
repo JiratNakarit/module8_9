@@ -419,7 +419,7 @@ def pack_data(ca_l=[], pos_l=[], cor_l=[], rw_l=[], dat_pack=[], scene='l'):
         for counter in range(len(rw_l)):
             rw_l[counter][0] = rw_l[counter][0] * -1
             rw_l[counter][1] = rw_l[counter][1] * -1
-    for counter, i in enumerate(pos_l):
+    for counter, i in enumerate(ca_l):
         usable = True
         realworld = [j*1000 for j in rw_l[counter]]
         realworld = find_world_coor(blr=scene, xy=realworld)
@@ -432,9 +432,9 @@ def pack_data(ca_l=[], pos_l=[], cor_l=[], rw_l=[], dat_pack=[], scene='l'):
                     print('Unusable: Duplicate card.')
                     break
             if usable:
-                dat_pack.append([realworld, get_rpy(cor_l[counter],scene), ca_l[counter]])
+                dat_pack.append([realworld, get_rpy(cor_l[counter],scene), i])
         else:
-            dat_pack.append([realworld, get_rpy(cor_l[counter],scene), ca_l[counter]])
+            dat_pack.append([realworld, get_rpy(cor_l[counter],scene), i])
 
     return dat_pack
 
@@ -457,7 +457,7 @@ if __name__ == "__main__":
     cardlist, midpointlist, cornerlist, realworldlist = rtp.one_time()
 
     #get_homo, put pantile's list by pan is q1 and tilt is q2 , blr is scene ('l', 'r', 'blbr')
-    homo = blr.get_homo(q1_=-90,q2_=0,blr_='l')[1]
+    homo = blr.get_homo(q1_=-90,q2_=0,blr_='l')
 
     # realworldlist is the function that convert centroid of picture to centroid of picture with respect to world coordinate
     realworldlist = convert_pos(midpointlist,newcammtx,homo)
@@ -476,7 +476,7 @@ if __name__ == "__main__":
     rtp.release_camera_instance()
     rtp.create_camera_instance(0)
     cardlist, midpointlist, cornerlist, realworldlist = rtp.one_time()
-    homo = blr.get_homo(q1_=90,q2_=0,blr_='r')[2]
+    homo = blr.get_homo(q1_=90,q2_=0,blr_='r')
     realworldlist = convert_pos(midpointlist,newcammtx,homo)
     cornerworldlist = convert_pos(cornerlist,newcammtx,homo,mode=0,inverse=False)
     data_pack = pack_data(cardlist, midpointlist, cornerworldlist, realworldlist, data_pack, 'r')
