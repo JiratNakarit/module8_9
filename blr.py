@@ -39,7 +39,12 @@ def get_homo(q1_=0,q2_=0,blr_='l'):
 		[np.cos(q1 - qc1), -np.sin(q1 - qc1) * np.sin(qc2),  np.sin(q1 - qc1) * np.cos(qc2), lc2 * np.cos(q1) * np.sin(qc1) - lc1 * np.sin(q1) - lc2 * np.cos(qc1) * np.sin(q1) + lc3 * np.cos(q1) * np.cos(qc2) * np.sin(qc1) - lc3 * np.cos(qc1) * np.cos(qc2) * np.sin(q1) + hc3 * np.cos(q1) * np.sin(qc1) * np.sin(qc2) - hc3 * np.cos(qc1) * np.sin(q1) * np.sin(qc2) + 476 / 1000],
 		[0, 0, 0, 1]]
 
-	return B,L,R
+	if blr_ == 'l':
+		return L
+	elif blr_ == 'r':
+		return R
+	elif blr_ == 'bl' or blr_ == 'br':
+		return B
 
 
 

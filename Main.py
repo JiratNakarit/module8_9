@@ -46,7 +46,7 @@ def cam_clf(DATA_PACK,brl,pt):
     cardlist, midpointlist, cornerlist, realworldlist = rtp.one_time()
 
     #get_homo, put pantile's list by pan is q1 and tilt is q2 , blr is scene ('l', 'r', 'blbr')
-    homo = blr.get_homo(q1_=pt[0], q2_=pt[1], blr_=brl)[1]
+    homo = blr.get_homo(q1_=pt[0], q2_=pt[1], blr_=brl)
 
     # realworldlist is the function that convert centroid of picture to centroid of picture with respect to world coordinate
     realworldlist = convert_pos(midpointlist, newcammtx, homo)
