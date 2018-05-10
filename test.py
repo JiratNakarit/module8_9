@@ -17,7 +17,6 @@ KHONG = Board('COM4',115200)
 
 # homo = Get_Position.homo
 rtp = Real_Time_Predict()
-rtp.create_camera_instance(0)
 rtp.create_HogDescriptor()
 
 convert = Get_Position.World()
@@ -43,7 +42,6 @@ def cmKhong(position):
     #pass
 
 def cam_clf(DATA_PACK,brl,pt):
-    rtp.release_camera_instance()
     rtp.create_camera_instance(0)
 
     #open camera and read model and predict get centroid of picture and 4 points of conner
@@ -61,16 +59,20 @@ def cam_clf(DATA_PACK,brl,pt):
     # data_pack include 1.cardlist is class og each card, 2.midpointlist is useless, 3.cornerworldlist is cornerworldlist
     #                   4.realworldlist is realworldlist, 5.data_pack (it will send to MATLAB later) 6.parameter that tell scene
     data_pack = pack_data(cardlist, midpointlist, cornerworldlist, realworldlist, DATA_PACK, brl)
+    rtp.release_camera_instance()
     return data_pack
 
 # Variable _____________________________________________________________________________________________________________
 STATE = 1
 CARD_POSITION = []
-PANTILT = [[-50,-70],
-           [90,-30],[90,-10],[90,10],[90,25],
-           [75,22],[70,10],[70,0],[70,-10],[70,-20],
-           [60,-20],[60,-10],[70,0],[70,10],[70,22]]
+PANTILT = [[-50, -70],
+           [90, -30], [90, -10], [90, 10], [90, 25],
+           [75, 22], [70, 10], [70, 0], [70,-10], [70, -20],
+           [60, -20], [60, -10], [70, 0], [70, 10], [70, 22]]
+
 #INV_PANTILT = inv_pantilt(PANTILT)
+
+BASE_PANTILT = [[-35, -50], [-17, -60], [0, -59], [17, -60], [35, -50]]
 
 # Const. Position
 HOME = [0,0,0,0,0,0,0]

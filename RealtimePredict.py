@@ -31,6 +31,15 @@ class Real_Time_Predict:
         self.gammaCorrection = 1
         self.nlevels = 64
 
+        self.kernel = np.ones((2, 2), np.uint8)
+
+        self.dat = np.load('calibresult1.npz')
+
+        self.mtx = self.dat['mtx']
+        self.dist = self.dat['dist']
+        self.newcammtx = self.dat['newcameramtx']
+        self.roi = self.dat['roi']
+
         self.class_list = ["0","1","2","3","4","5",'6','7','8','9','zero' ,'one','two','three','four','five','six','seven','eight','nine','zero_TH' ,'one_TH','two_TH','three_TH','four_TH','five_TH','six_TH','seven_TH','eight_TH','nine_TH']
 
     def create_camera_instance(self, id=0):
@@ -122,10 +131,13 @@ class Real_Time_Predict:
             model = pickle.load(model_f) 
         # model = pickle.load(open(model_name, 'rb'))
         ret, frame = self.cap.read()
+        frame = cv2.undistort(frame, self.mtx, self.dist, None, self.newcammtx)
+        x, y, w, h = self.roi
+        frame = frame[y:y + h, x:x + w]
+        self.img_size = frame.shape
         self.img_size = frame.shape
         edges = cv2.Canny(frame,100,200)
-        kernel = np.ones((2, 2), np.uint8)
-        edges = cv2.dilate(edges, kernel, iterations=1)
+        edges = cv2.dilate(edges, self.kernel, iterations=1)
         ret, contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         selected_contour = []
         left_side = []
@@ -379,11 +391,11 @@ def convert_pos(pos_list=[],mtx=[],homo=[],mode=1,inverse=False):
 
 def find_world_coor(blr='l',xy=[]):
     if blr == 'l':
-        return [xy[0], 473, xy[1]]
+        return [((xy[0] - 45) * -1) + 40, 473, (xy[1] - 665) * -1]
     elif blr == 'r':
-        return [-xy[0], -473, xy[1]]
+        return [((-xy[0] - 95) * -1) - 40, -473, (xy[1] - 660) * -1]
     elif blr == 'br' or blr == 'bl' or blr == 'b':
-        return [xy[1], -xy[0], 27]
+        return [(-xy[0]) * -1, (xy[1] + 39) * -1, 27]
 
 def find_distance(p1=[], p2=[]):
     vector = []
@@ -415,26 +427,36 @@ def get_rpy(cor_l=[], scene='l'):
         return[pi, 0 ,angle]
 
 def pack_data(ca_l=[], pos_l=[], cor_l=[], rw_l=[], dat_pack=[], scene='l'):
-    if rw_l:
-        for counter in range(len(rw_l)):
-            rw_l[counter][0] = rw_l[counter][0] * -1
-            rw_l[counter][1] = rw_l[counter][1] * -1
+
+    # if rw_l:
+    #     for counter in range(len(rw_l)):
+    #         rw_l[counter][0] = rw_l[counter][0] * -1
+    #         rw_l[counter][1] = rw_l[counter][1] * -1
+
     for counter, i in enumerate(pos_l):
         usable = True
-        realworld = [j*1000 for j in rw_l[counter]]
+        realworld = [j * 1000 for j in rw_l[counter]]
         realworld = find_world_coor(blr=scene, xy=realworld)
         if len(dat_pack):
             for pack in dat_pack:
                 distance =find_distance(pack[0], realworld)
-                print(distance, counter)
-                if distance <= 105:
+
+                if ca_l[counter] in dat_pack[0]:
                     usable = False
-                    print('Unusable: Duplicate card.')
+                    print('Unusable: Duplicate card Class {}.\n'.format(ca_l[counter]))
+                    break
+
+                if distance <= 100:
+                    usable = False
+                    print('Unusable: Duplicate card Position (distance: {} cm).\n'.format(distance / 10))
                     break
             if usable:
-                dat_pack.append([realworld, get_rpy(cor_l[counter],scene), ca_l[counter]])
-        else:
-            dat_pack.append([realworld, get_rpy(cor_l[counter],scene), ca_l[counter]])
+                dat_pack.append([realworld, get_rpy(cor_l[counter], scene), ca_l[counter]])
+                print('Add Card {}.\n'.format(ca_l[counter]))
+
+            else:
+                dat_pack.append([realworld, get_rpy(cor_l[counter], scene), ca_l[counter]])
+                print('Add Card {}.\n'.format(ca_l[counter]))
 
     return dat_pack
 
@@ -457,7 +479,7 @@ if __name__ == "__main__":
     cardlist, midpointlist, cornerlist, realworldlist = rtp.one_time()
 
     #get_homo, put pantile's list by pan is q1 and tilt is q2 , blr is scene ('l', 'r', 'blbr')
-    homo = blr.get_homo(q1_=-90,q2_=0,blr_='l')[1]
+    homo = blr.get_homo(q1_=-90,q2_=0,blr_='l')
 
     # realworldlist is the function that convert centroid of picture to centroid of picture with respect to world coordinate
     realworldlist = convert_pos(midpointlist,newcammtx,homo)
@@ -476,7 +498,7 @@ if __name__ == "__main__":
     rtp.release_camera_instance()
     rtp.create_camera_instance(0)
     cardlist, midpointlist, cornerlist, realworldlist = rtp.one_time()
-    homo = blr.get_homo(q1_=90,q2_=0,blr_='r')[2]
+    homo = blr.get_homo(q1_=90,q2_=0,blr_='r')
     realworldlist = convert_pos(midpointlist,newcammtx,homo)
     cornerworldlist = convert_pos(cornerlist,newcammtx,homo,mode=0,inverse=False)
     data_pack = pack_data(cardlist, midpointlist, cornerworldlist, realworldlist, data_pack, 'r')
