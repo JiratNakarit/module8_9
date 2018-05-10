@@ -19,17 +19,24 @@ class Main:
         Front = [0,80,30,90,60,90]
         Right = [90,80,30,90,60,90]
 
-        # Variable _________________________________________________________________________________________________________
+        # Variable _____________________________________________________________________________________________________
         Camera = [[-50,-70],
                    [90,-30],[90,-10],[90,10],[90,25],
                    [75,22],[70,10],[70,0],[70,-10],[70,-20],
                    [60,-20],[60,-10],[70,0],[70,10],[70,22]]
 
 
-    def __init__(self):
+    def __init__(self,nomodeset=0):
         # Call class ___________________________________________________________________________________________________
-        self.KHONG = Board('COM4',115200)
-        self.CAMER = Dynamixel('COM3',1000000)
+        if nomodeset == 1:
+            self.KHONG = Board('COM4',115200)
+        elif nomodeset == 2:
+            self.CAMER = Dynamixel('COM3',1000000)
+        elif nomodeset == 0:
+            self.KHONG = Board('COM4',115200)
+            self.CAMER = Dynamixel('COM3',1000000)
+        else:
+            raise NameError('NoMode not found (your mode is ',nomodeset)
 
         # homo = Get_Position.homo
         self.rtp = Real_Time_Predict()
@@ -168,7 +175,7 @@ class Main:
         return ENDT_LLV
 
 if __name__ == '__main__':
-    Sequen = Main()
+    Sequen = Main(nomodeset=0)
     CardPosition, T_1 = Sequen.Step1FindCard()
     Path, T_2 = Sequen.Step2PathPlan(CardPosition)
     T_3 = Sequen.Step3CommandKhong(Path)
