@@ -2,6 +2,7 @@
 import time
 import math
 import ast
+import cv2
 
 # Import class _________________________________________________________________________________________________________
 from Dynamixel import *
@@ -92,6 +93,8 @@ class Main:
         #                   4.realworldlist is realworldlist, 5.data_pack (it will send to MATLAB later) 6.parameter that tell scene
         data_pack = pack_data(cardlist, midpointlist, cornerworldlist, realworldlist, DATA_PACK, brl)
         self.rtp.release_camera_instance()
+
+        print(data_pack)
         return data_pack
 
     # Loop camera(pan,tilt),classify, position _________________________________________________________________________
@@ -146,6 +149,7 @@ class Main:
         self.CAMER.PANTILT(0)
         self.cmKhong(Main.Const.Home)
         ENDT_CLF = T_CLF - time.time()
+        cv2.destroyAllWindows()
         return CARD_POSITION, ENDT_CLF
 
 # Planning (MATLAB) ____________________________________________________________________________________________________
@@ -192,11 +196,11 @@ class Main:
         return ENDT_LLV
 
 if __name__ == '__main__':
-    Sequen = Main(nomodeset=1)
-    #CardPosition, T_1 = Sequen.Step1FindCard()
+    Sequen = Main(nomodeset=0)
+    CardPosition, T_1 = Sequen.Step1FindCard()
     #print(CardPosition)
-    CardPosition = [[[600.,510.,500.],[3.14/2,-3.14/2,3.14],0.],
-                [[600.,-478.,800.],[3.14/2,-3.14/2,0.],13.]]
+    #CardPosition = [[[600.,510.,500.],[3.14/2,-3.14/2,3.14],0.],
+    #            [[600.,-478.,800.],[3.14/2,-3.14/2,0.],13.]]
     Path, T_2 = Sequen.Step2PathPlan(CardPosition)
     T_3 = Sequen.Step3CommandKhong(Path)
 

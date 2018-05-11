@@ -54,7 +54,7 @@ class PathPlan:
     def EvaluateTraject(self):
         Traject = []
         traject = self.GenTraject()
-        dt = 0.4
+        dt = 0.5
         time = 0
         #T_sub = []
         for p_ind in range(len(traject)):
@@ -96,8 +96,7 @@ class PathPlan:
 
 if __name__ == "__main__":
     pi = math.pi
-    card_list_ = [[[600.,510.,500.],[3.14/2,-3.14/2,3.14],0.],
-                [[600.,-478.,800.],[3.14/2,-3.14/2,0.],13.]]
+    card_list_ = [[[700.0, -485.0, 200.0], [1.5707963267948966, -1.4138531198405522, 0.0], 10]]
 
     chin = PathPlan(card_list_)
 

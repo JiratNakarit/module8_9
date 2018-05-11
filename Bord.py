@@ -89,8 +89,16 @@ if __name__ == '__main__':
 
     KHONG = Board('COM4',115200)
 
+    def transform_angle(q_configuration):
+        q_homeconfig = [180,90,30,90,60,90]
+        q_symbol = [-1,-1,1,-1,1,-1]
+        q_transform = []
+        for i in range(0,6):
+            q_transform.append(q_homeconfig[i] + q_symbol[i]*q_configuration[i])
+        return q_transform
 
-    # KHONG.SetPosition([0,0,0,90,90,90])
+
+    KHONG.SetPosition([90,90-23,30,90,90+10,90])
 
     #while True:
     #for i in [40,65,75,85,95,0]:
