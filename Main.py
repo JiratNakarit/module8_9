@@ -20,10 +20,17 @@ class Main:
         Right = [90,80,30,90,60,90]
 
         # Variable _____________________________________________________________________________________________________
-        Camera = [[-50,-70],
+        CameraRight = [[-50,-70],
                    [90,-30],[90,-10],[90,10],[90,25],
                    [75,22],[70,10],[70,0],[70,-10],[70,-20],
-                   [60,-20],[60,-10],[70,0],[70,10],[70,22]]
+                   [60,-20],[60,-10],[70,0],[70,10],]
+
+        CameraBase = [[-35, -50], [-17, -60], [0, -59], [17, -60], [35, -50]]
+
+        CameraLeft = [[-70,22],[-70,0],[-60,-10],[-60,-20],
+                      [-70,-20],[-70,-10],[-70,0],[-70,10],[-75,22],
+                      [-90,25],[-90,10],[-90,-10],[-90,-30],
+                      [-50,-70]]
 
 
     def __init__(self,nomodeset=0):
@@ -40,7 +47,7 @@ class Main:
 
         # homo = Get_Position.homo
         self.rtp = Real_Time_Predict()
-        self.rtp.create_camera_instance(0)
+        # self.rtp.create_camera_instance(0)
         self.rtp.create_HogDescriptor()
 
         self.convert = Get_Position.World()
@@ -52,6 +59,7 @@ class Main:
         self.CAMER.PAN(pantilt[0])
         self.CAMER.TILT(pantilt[1])
         self.CAMER.WaitFinish([1,9])
+        time.sleep(1)
 
     def inv_pantilt(self,pantilt):
         result = pantilt[::-1].copy()
@@ -65,14 +73,14 @@ class Main:
         #KHONG.WaitFinish()
 
     def cam_clf(self,DATA_PACK,brl,pt):
-        self.rtp.release_camera_instance()
+
         self.rtp.create_camera_instance(0)
 
         #open camera and read model and predict get centroid of picture and 4 points of conner
         cardlist, midpointlist, cornerlist, realworldlist = self.rtp.one_time()
 
         #get_homo, put pantile's list by pan is q1 and tilt is q2 , blr is scene ('l', 'r', 'blbr')
-        homo = blr.get_homo(q1_=pt[0], q2_=pt[1], blr_=brl)[1]
+        homo = blr.get_homo(q1_=pt[0], q2_=pt[1], blr_=brl)
 
         # realworldlist is the function that convert centroid of picture to centroid of picture with respect to world coordinate
         realworldlist = convert_pos(midpointlist, newcammtx, homo)
@@ -83,6 +91,7 @@ class Main:
         # data_pack include 1.cardlist is class og each card, 2.midpointlist is useless, 3.cornerworldlist is cornerworldlist
         #                   4.realworldlist is realworldlist, 5.data_pack (it will send to MATLAB later) 6.parameter that tell scene
         data_pack = pack_data(cardlist, midpointlist, cornerworldlist, realworldlist, DATA_PACK, brl)
+        self.rtp.release_camera_instance()
         return data_pack
 
     # Loop camera(pan,tilt),classify, position _________________________________________________________________________
@@ -91,25 +100,32 @@ class Main:
         STATE = 1
         CARD_POSITION = []
 
-        for PT in Main.Const.Camera:
+        for PT in Main.Const.CameraRight:
             if STATE == 1:
                 # 1. Rotate J1 90 degree
-                self.cmKhong(Main.Const.Right)
+                #self.cmKhong(Main.Const.Right)
                 # 2. Pan CAM (-50,-70)
-                self.camera(PT)
+                #self.camera(PT)
                 # 3. Predict & Position
-                CARD_POSITION = self.cam_clf(CARD_POSITION,'br',PT)
+                #CARD_POSITION = self.cam_clf(CARD_POSITION,'br',PT)
+                pass
+
             else:
                 # 4. Rotate J1 90 degree
                 if STATE == 2:
                     self.cmKhong(Main.Const.Front)
+                    time.sleep(8)
                 # 5. Pan CAM [95,-30],[95,-10],[95,15],[95,22],[70,22],[70,-10],[70,-30]
                 self.camera(PT)
                 # 6. Predict & Position
                 CARD_POSITION = self.cam_clf(CARD_POSITION,'r',PT)
             STATE += 1
 
-        for PT in INV_PANTILT:
+        for PT in Main.Const.CameraBase:
+            self.camera(PT)
+            CARD_POSITION = self.cam_clf(CARD_POSITION,'b',PT)
+
+        for PT in Main.Const.CameraLeft:
             if STATE != 16:
                 # 7. Pan CAM [-95,-30],[-95,-10],[-95,15],[-95,22],[-70,22],[-70,-10],[-70,-30]
                 self.camera(PT)
@@ -124,6 +140,7 @@ class Main:
                 # 11. Predict & Position
                 #CARD_POSITION = self.cam_clf(CARD_POSITION,'bl',PT)
                 pass
+            STATE += 1
 
         # Set home position
         self.CAMER.PANTILT(0)
@@ -175,8 +192,11 @@ class Main:
         return ENDT_LLV
 
 if __name__ == '__main__':
-    Sequen = Main(nomodeset=0)
-    CardPosition, T_1 = Sequen.Step1FindCard()
+    Sequen = Main(nomodeset=1)
+    #CardPosition, T_1 = Sequen.Step1FindCard()
+    #print(CardPosition)
+    CardPosition = [[[600.,510.,500.],[3.14/2,-3.14/2,3.14],0.],
+                [[600.,-478.,800.],[3.14/2,-3.14/2,0.],13.]]
     Path, T_2 = Sequen.Step2PathPlan(CardPosition)
     T_3 = Sequen.Step3CommandKhong(Path)
 
@@ -185,18 +205,3 @@ if __name__ == '__main__':
     print('1. Time for find card: ',T_1)
     print('2. Time for Planning : ',T_2)
     print('3. Time for Running  : ',T_3)
-
-'''
-pi = math.pi
-
-CARD_POSITION = [[[150.,275.,27.],[pi,0.,0.],0.],
-                [[150.,-275.,27.],[pi,0.,0.],19.],
-                [[500.,473.,800.],[pi/2,-pi/2,pi],21.],
-                [[380.,473.,600.],[pi/2,-pi/2,pi],8.],
-                [[600.,473.,300.],[pi/2,-pi/2,pi],1.],
-                [[300.,473.,825.],[pi/2,-pi/2,pi],5.],
-                [[300.,-473.,200.],[pi/2,-pi/2,0.],17.],
-                [[450.,-473.,500.],[pi/2,-pi/2,0.],29.],
-                [[620.,-473.,200.],[pi/2,-pi/2,0.],20.],
-                [[620.,-473.,800.],[pi/2,-pi/2,0.],13.]]
-'''

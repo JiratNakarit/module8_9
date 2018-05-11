@@ -214,7 +214,7 @@ class Real_Time_Predict:
 
         cv2.imshow("Camera", frame)
         cv2.imshow("Edge", edges)
-        cv2.waitKey(0)
+        # cv2.waitKey(0)
         frame = None
         return class_num, midpoint_list, corner_list, []
 
@@ -392,17 +392,17 @@ def convert_pos(pos_list=[],mtx=[],homo=[],mode=1,inverse=False):
 def find_world_coor(blr='l', xy=[]):
     if blr == 'l':
         # return [((xy[0] - 95) * -1)+40, 473, (xy[1]-665) * -1]
-        return [((xy[0] - 115) * -1)-20, 473, ((xy[1]-670) * -1)+20]
+        return [((xy[0] - 115) * -1)-20, 485., ((xy[1]-670) * -1)+20]
         # return [xy[0], 473, xy[1]]
     elif blr == 'r':
         # return [((-xy[0] - 45) * -1)-40, -473, (xy[1] -660) * -1]
-        return [((-xy[0] - 23) * -1)-15, -473, ((xy[1] -690) * -1)+15]
+        return [((-xy[0] - 23) * -1)-15, -478., ((xy[1] -690) * -1)+15]
         # return [-xy[0], -473, xy[1]]
     elif blr == 'br' or blr == 'bl' or blr == 'b':
         if (xy[1]+40) * -1 <= 0:
-            return [(xy[0]+200), (xy[1]+40) * -1, 27]
+            return [(xy[0]+200), (xy[1]+40) * -1, 17.]
         elif (xy[1]+40) * -1 > 0:
-            return [(xy[0]+270), (xy[1]+40) * -1, 27]
+            return [(xy[0]+270), (xy[1]+40) * -1, 17.]
         # return [-xy[0], xy[1], 27]
 
 def find_distance(p1=[], p2=[]):
@@ -430,9 +430,9 @@ def get_rpy(cor_l=[], scene='l'):
     if scene == 'l':
         return [pi/2, angle-(pi/2), pi]
     elif scene == 'r':
-        return [pi/2, angle-(pi/2), 0]
+        return [pi/2, angle-(pi/2), 0.]
     elif scene == 'bl' or scene == 'br' or scene == 'b':
-        return[pi, 0 ,angle]
+        return[pi, 0. ,angle]
 
 def pack_data(ca_l=[], pos_l=[], cor_l=[], rw_l=[], dat_pack=[], scene='l'):
 
@@ -462,9 +462,9 @@ def pack_data(ca_l=[], pos_l=[], cor_l=[], rw_l=[], dat_pack=[], scene='l'):
                 dat_pack.append([realworld, get_rpy(cor_l[counter], scene), ca_l[counter]])
                 print('Add Card {}.\n'.format(ca_l[counter]))
 
-            else:
-                dat_pack.append([realworld, get_rpy(cor_l[counter], scene), ca_l[counter]])
-                print('Add Card {}.\n'.format(ca_l[counter]))
+        else:
+            dat_pack.append([realworld, get_rpy(cor_l[counter], scene), ca_l[counter]])
+            print('Add Card {}.\n'.format(ca_l[counter]))
 
     return dat_pack
 
@@ -502,7 +502,7 @@ if __name__ == "__main__":
     cornerworldlist = None
     
     # ***************************************************************************************************************************************************************************
-    cv2.waitKey(0)
+    # cv2.waitKey(0)
     rtp.release_camera_instance()
     rtp.create_camera_instance(0)
     cardlist, midpointlist, cornerlist, realworldlist = rtp.one_time()
