@@ -1,20 +1,20 @@
-function [coef_all,t_i_all,T_all] = MotionPlanning(card_list)
+function [coef_all,t_i_all,T_all,card,planning,env,robot] = NMotionPlaning(card_list)
 %% Card     
 %{
-    card_1 = {[200;375;20],[pi;0;0],0};
-    card_2 = {[200;-375;20],[pi;0;0],19};
-    card_3 = {[500;485;800],[pi/2;-pi/2;pi],21};
+    card_1 = {[700;400;20],[pi;0;0],0};
+    card_2 = {[800;0;20],[pi;0;0],19};
+    card_3 = {[500;490;200],[pi/2;-pi/2;pi],21};
     card_4 = {[380;480;600],[pi/2;-pi/2;pi],8};
     card_5 = {[600;480;300],[pi/2;-pi/2;pi],1};
     card_6 = {[300;480;825],[pi/2;-pi/2;pi],5};
-    card_7 = {[300;-485;200],[pi/2;-pi/2;0],17};
-    card_8 = {[450;-480;500],[pi/2;-pi/2;0],29};
+    card_7 = {[600;-530;500],[pi/2;-pi/2;0],17};
+    card_8 = {[450;-480;0],[pi/2;-pi/2;0],29};
     card_9 = {[620;-480;200],[pi/2;-pi/2;0],20};
     card_10 = {[620;-480;800],[pi/2;-pi/2;0],13};
     
-    card_list = {card_1,card_3,card_7};
+    card_list = {card_3};
     card.lists = card_list;
-%}
+ %}
     new_card_list = {};
     new_card = {};
     for i = 1:numel(card_list)
@@ -77,21 +77,21 @@ function [coef_all,t_i_all,T_all] = MotionPlanning(card_list)
                             0,          0,          0,           0,        high,       high,       high,        high];
     env.workspace = workspace; 
     
-    env.targetzone = { {[780; 400;780],[0;-pi/2;pi],'T1'},  {[780; 200;780],[0;-pi/2;pi],'T2'},    {[775;0;780],[0;-pi/2;pi],'T3'},...
-                       {[780;-200;780],[0;-pi/2;pi],'T4'},  {[780; 400;600],[0;-pi/2;pi],'T5'},    {[780; 200;600],[0;-pi/2;pi],'T6'},...
-                       {[780;0;600],[0;-pi/2;pi],'T7'},  {[780;-200;600],[0;-pi/2;pi],'T8'},    {[775; 100;400],[0;-pi/2;pi],'T9'},...
-                       {[780;-100;400],[0;-pi/2;pi],'T10'} };
+    env.targetzone = { {[800; 300;700],[0;-pi/2;pi],'T1'},  {[780; 80;750],[0;-pi/2;pi],'T2'},  {[770;-130;760],[0;-pi/2;pi],'T3'},...
+                       {[770;-330;730],[0;-pi/2;pi],'T4'},  {[800; 290;500],[0;-pi/2;pi],'T5'},  {[800; 80;500],[0;-pi/2;pi],'T6'},...
+                       {[790;-140;500],[0;-pi/2;pi],'T7'},  {[770;-380;550],[0;-pi/2;pi],'T8'},  {[770; 80;340],[0;-pi/2;pi],'T9'},...
+                       {[770;-120;330],[0;-pi/2;pi],'T10'} };
     
 %% obstacle
 
-    Project_Front = [  0.7*width, -0.5*width, -0.5*width, 0.7*width; %% (y,z)
+    Project_Front = [  0.5*width+20, -0.5*width-55, -0.5*width-55, 0.5*width+20; %% (y,z)
                             high,      high,           0,        0]; 
-    Project_Front_flag = [  0.7*width-26, -0.5*width+26, -0.5*width+26, 0.7*width-26; %% (y,z)
+    Project_Front_flag = [  0.5*width-26+40, -0.5*width+26-55, -0.5*width+26-55, 0.5*width-26+40; %% (y,z)
                                  high,      high,           26,        26];
     Project_Top = [  0.8*length, 0.8*length, -0.8*length, -0.8*length; %% (x,y)
-                      0.7*width, -0.5*width,  -0.5*width,   0.7*width ];
-    Project_Top_flag = [  0.8*length-26, 0.8*length-26, -0.8*length, -0.8*length; %% (x,y)
-                      0.7*width-26, -0.5*width+26,  -0.5*width+26,   0.7*width-26 ];
+                      0.5*width+20, -0.5*width-55,  -0.5*width-55,   0.5*width+20 ]; 
+    Project_Top_flag = [  0.8*length, 0.8*length, -0.8*length, -0.8*length; %% (x,y)
+                      0.5*width-26+40, -0.5*width+26-55,  -0.5*width+26-55,   0.5*width-26+40 ]; 
                   
     laser = [700,  700,  590,  590; %(x,y)
               10,  -10,  -10,   10];
@@ -100,98 +100,74 @@ function [coef_all,t_i_all,T_all] = MotionPlanning(card_list)
     env.laser = false;
     
 %% RRT Law
-    Maximum_Eucl_distance = 0.5;
-    Maximum_Iteration = 300;
-    Number_Random_Config = 40;
-    Percentage_Greedness = 60;
+    Maximum_Eucl_distance = 0.4;
+    Maximum_Iteration = 100;
+    Number_Random_Config = 60;
+    Percentage_Greedness = 70;
     
     RRTLaw.dl = Maximum_Eucl_distance;
     RRTLaw.k = Maximum_Iteration;
     RRTLaw.n = Number_Random_Config;
     RRTLaw.grd = Percentage_Greedness;
-    
+
+%% planning
     planning.RRT = RRTLaw;
 
 %% Sorting
 
     Nc = numel(card.lists);
-    pos_list = cell(1,(4*Nc)+3);
-    N = numel(pos_list);
-    pos_list{1} = robot.Home;
-    pos_list{2} = robot.Set;
-    pos_list{end} = robot.Home;
 tic    
     % bubble sort
     srt_card_list = bubbleSort(card.lists);
     card.srtlists = srt_card_list;
-
-    % insert to sequence
-    target_zone = env.targetzone;
-    set_pose = robot.Set;
-    temp = 1;
-    for ind = 3:4:N-1
-        pos_list(:,ind:ind+3) = {srt_card_list{temp},set_pose,target_zone{temp},set_pose};
-        temp = temp+1;
-    end 
-   
 toc    
 %% Start Planning 
 tic
-    flag_end = 0; %flag
-    temp = 1;
-    for p_ind = 1:N-1
-        [q_init,st_1] = inverseKinematics(robot,pos_list{p_ind});
-        [q_goal,st_2] = inverseKinematics(robot,pos_list{p_ind+1});
-        q_init = q_init';
-        q_goal = q_goal';
-        
-        if (mod(p_ind,4) == 0)||(mod(p_ind,4) == 3), flag_end = 1; 
-        else flag_end = 0; end
-        
-        if ((mod(p_ind,4) == 0)|| (mod(p_ind,4) == 1)) && p_ind ~= 1 && p_ind ~= N-1, RRTLaw.dl = 0.3; RRTLaw.grd = 70;
-        else RRTLaw.dl = 0.5; RRTLaw.grd = 70; end
-        
-        if ~(st_1 == 1 && st_2 == 1)
-            report_status(st_1,st_2,p_ind,pos_list);
-            continue
+    p_ind = 1;
+    target = env.targetzone;
+    while numel(srt_card_list) ~= 0
+        if p_ind == 1
+            [planning.Path{p_ind},~]=PathPlan(robot.Home,robot.Set,robot,env,RRTLaw,p_ind);
+            p_ind = p_ind+1;
         else
-            while true
-                report_status(st_1,st_2,p_ind,pos_list);
-                [T,reach] = buildRRT(robot,env,q_init,q_goal,RRTLaw,flag_end);
-                planning.Tree{p_ind} = T;
-                planning.Reach(p_ind) = reach;
-                planning.Step(p_ind,:) = {{q_init,q_goal},{pos_list{p_ind}{1},pos_list{p_ind+1}{1}},{pos_list{p_ind}{3},pos_list{p_ind+1}{3}}};        
-                if reach
-                    index = 1;
-                    iterater = T.breadthfirstiterator;
-                    for node = iterater
-                        if norm(T.Node{node}-q_goal) == 0
-                            for j = T.findpath(1,node);
-                                planning.Path{p_ind}(:,index) = T.Node{j}';
-                                index = index+1;
-                            end
-                            break;
-                        end
-                    end
-                    display('Done!!!')
-                    break
-                else
-                    %planning.unReach(temp) = p_ind; temp = temp+1;
-                    %planning.Path{p_ind}(:,1) = planning.Step{p_ind,2}{1};
-                    %planning.Path{p_ind}(:,2) = planning.Step{p_ind,2}{2};
-                    display('Fail!!!')
-                end
+            [planning.Path{p_ind},status]=PathPlan(robot.Set,srt_card_list{1},robot,env,RRTLaw,p_ind);
+            if ~status
+                srt_card_list(1) = [];
+            else
+                p_ind = p_ind+1;
+                %[planning.Path{p_ind},~]=PathPlan(srt_card_list{1},robot.Set,robot,env,RRTLaw,p_ind);
+                report_status(1,1,p_ind,srt_card_list{1},robot.Set);
+                planning.Path{p_ind} = fliplr(planning.Path{p_ind-1});               
+                p_ind = p_ind+1;
+                
+                [planning.Path{p_ind},~]=PathPlan(robot.Set,target{1},robot,env,RRTLaw,p_ind);            
+                p_ind = p_ind+1;
+                
+                %[planning.Path{p_ind},~]=PathPlan(target{1},robot.Set,robot,env,RRTLaw,p_ind);  
+                report_status(1,1,p_ind,target{1},robot.Set);
+                planning.Path{p_ind} = fliplr(planning.Path{p_ind-1});   
+                p_ind = p_ind+1;
+                
+                srt_card_list(1) = [];
+                target(1) = [];
             end
         end
-    end    
- toc
+        
+        if numel(srt_card_list) == 0
+            %[planning.Path{p_ind},~]=PathPlan(robot.Set,robot.Home,robot,env,RRTLaw,p_ind);
+            report_status(1,1,p_ind,robot.Set,robot.Home);
+            planning.Path{p_ind} = fliplr(planning.Path{1});
+        end
+    end
+toc
   
  %% Trajectory Generation
  
  tic
     timetofinish = 0;
-    Traject_all = cell(3,N-1);
-    for p_ind = 1:N-1
+    N = numel(planning.Path);
+    Traject_all = cell(3,N);
+    for p_ind = 1:N
         p_ind
         via_point = planning.Path{p_ind};
         [Traject_all{1,p_ind},Traject_all{2,p_ind},Traject_all{3,p_ind}] = TrajectGen(via_point,robot);
@@ -207,6 +183,51 @@ toc
     %Main(planning)
     [coef_all,t_i_all,T_all] = transformDat(planning);
     
+end
+
+%% planning
+function [via,status]=PathPlan(start,finish,robot,env,RRTLaw,p_ind)
+    [q_init,st_1] = inverseKinematics(robot,start);
+    [q_goal,st_2] = inverseKinematics(robot,finish);
+    q_init = q_init';
+    q_goal = q_goal';
+    if (mod(p_ind,4) == 0)||(mod(p_ind,4) == 3), flag_end = 1; 
+    else flag_end = 0; end
+
+%    if ((mod(p_ind,4) == 0)|| (mod(p_ind,4) == 1)) && p_ind ~= 1 && p_ind ~= N-1, RRTLaw.dl = 0.4; RRTLaw.grd = 70;
+%    else RRTLaw.dl = 0.4; RRTLaw.grd = 70; end
+
+    if ~(st_1 == 1 && st_2 == 1)
+        report_status(st_1,st_2,p_ind,start,finish);
+        status = 0;
+    else
+        report_status(st_1,st_2,p_ind,start,finish);
+        [T,reach] = buildRRT(robot,env,q_init,q_goal,RRTLaw,flag_end);
+        if reach
+            index = 1;
+            iterater = T.breadthfirstiterator;
+            for node = iterater
+                if norm(T.Node{node}-q_goal) == 0
+                    for j = T.findpath(1,node);
+                        via(:,index) = T.Node{j}';
+                        index = index+1;
+                    end
+                    break;
+                end
+            end
+            display('Done!!!')
+            status = 1;
+        else
+            %planning.unReach(temp) = p_ind; temp = temp+1;
+            %planning.Path{p_ind}(:,1) = planning.Step{p_ind,2}{1};
+            %planning.Path{p_ind}(:,2) = planning.Step{p_ind,2}{2};
+            display('Fail!!!')
+            via = NaN;
+            status = 0;
+        end
+    end    
+    
+
 end
 
 %% transform Data
@@ -725,12 +746,12 @@ function [A,A_T,A_F,links] = robotSpace(q)
                  35,  -79,    35,  -79,     35,   -79,     35,   -79];
 
     link_5_2 = [  50,    50,   50,    50,  -50,   -50,  -50,  -50;
-                  84,    84,   -38,    -38,   84,    84,   -38,   -38;
+                  38,    38,   -38,    -38,   38,    38,   -38,   -38; %+84
                  -79,  -132,  -79,  -132,  -79,  -132,  -79, -132];
              
     link_6_1 = [   58,    58,    58,    58,    -58,    -58,    -58,    -58;
                    58,    58,   -58,   -58,     58,     58,    -58,    -58;
-                    -15,   -38,     -15,   -38,      -15,    -38,      -15,    -38];
+                    -12,   -38,     -12,   -38,      -12,    -38,      -12,    -38];       
              
     link_6_2 = [  58,    58,    58,    58,   -58,   -58,   -58,   -58;
                   58,    58,   -58,   -58,    58,    58,   -58,   -58;
@@ -844,10 +865,10 @@ function q_can = JointLimit(q,limit)
     end
 end
 
-function report_status(st_1,st_2,i,pose)
-    display(i)
-    display(pose{i})
-    display(pose{i+1})
+function report_status(st_1,st_2,p_ind,start,finish)
+    display(p_ind)
+    display(start)
+    display(finish)
     if st_1 == 0
         display('NO Solution!! at start Pose')
     elseif st_1 == 1

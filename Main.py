@@ -60,7 +60,6 @@ class Main:
         self.CAMER.PAN(pantilt[0])
         self.CAMER.TILT(pantilt[1])
         self.CAMER.WaitFinish([1,9])
-        time.sleep(1)
 
     def inv_pantilt(self,pantilt):
         result = pantilt[::-1].copy()
@@ -148,7 +147,7 @@ class Main:
         # Set home position
         self.CAMER.PANTILT(0)
         self.cmKhong(Main.Const.Home)
-        ENDT_CLF = T_CLF - time.time()
+        ENDT_CLF = time.time() - T_CLF
         cv2.destroyAllWindows()
         return CARD_POSITION, ENDT_CLF
 
@@ -183,6 +182,7 @@ class Main:
                     self.cmKhong(pose)
                     print('via: ',pose)
             if (path+1)%2 ==0:
+                time.sleep(2)
                 if (path+1)%4 == 0:
                     self.KHONG.SetGrip(0)
                 else:
@@ -200,7 +200,9 @@ if __name__ == '__main__':
     CardPosition, T_1 = Sequen.Step1FindCard()
     #print(CardPosition)
     #CardPosition = [[[600.,510.,500.],[3.14/2,-3.14/2,3.14],0.],
-    #            [[600.,-478.,800.],[3.14/2,-3.14/2,0.],13.]]
+    #                [[600.,-478.,800.],[3.14/2,-3.14/2,0.],13.]]
+    #Path = open('path.txt','r').read()
+    #Path = ast.literal_eval(Path)
     Path, T_2 = Sequen.Step2PathPlan(CardPosition)
     T_3 = Sequen.Step3CommandKhong(Path)
 

@@ -391,19 +391,19 @@ def convert_pos(pos_list=[],mtx=[],homo=[],mode=1,inverse=False):
 
 def find_world_coor(blr='l', xy=[]):
     if blr == 'l':
-        return [((xy[0] - 75) * -1), 485.0, (xy[1] - 695) * -1]
+        return [((xy[0] - 75) * -1), 495.0, (xy[1] - 695) * -1]
         # return [((xy[0] - 115) * -1)-20, 473, ((xy[1]-670) * -1)+20]
-        # return [xy[0], 473, xy[1]]
+        # return [xy[0], 495.0, xy[1]]
     elif blr == 'r':
-        return [((-xy[0] - 67) * -1) - 10, -485.0, ((xy[1] - 690) * -1) + 10]
+        return [((-xy[0] - 67) * -1) - 10, -535.0, ((xy[1] - 690) * -1) + 10]
         # return [((-xy[0] - 23) * -1)-15, -473, ((xy[1] -690) * -1)+15]
-        # return [-xy[0], -473, xy[1]]
+        # return [-xy[0], -535.0, xy[1]]
     elif blr == 'br' or blr == 'bl' or blr == 'b':
         if (xy[1] + 10) * -1 <= 0:
-            return [(xy[0] + 296) - 70, ((xy[1] + 10) * -1) + 10, 10.0]
+            return [(xy[0] + 296) - 70, ((xy[1] + 10) * -1) + 10, 26.0]
         elif (xy[1] + 10) * -1 > 0:
-            return [(xy[0] + 296) - 50, ((xy[1] + 10) * -1) - 30, 10.0]
-        # return [xy[0], -xy[1], 27]
+            return [(xy[0] + 296) - 50, ((xy[1] + 10) * -1) - 30, 26.0]
+        # return [xy[0], -xy[1], 26.]
 
 def find_distance(p1=[], p2=[]):
     vector = []
