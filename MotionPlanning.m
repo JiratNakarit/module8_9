@@ -41,9 +41,9 @@ function [coef_all,t_i_all,T_all,card,planning,env,robot] = NMotionPlaning(card_
     q_limit = [  -0.79    3.93;  %limit joint 1
                  -1.05    0.79;  %limit joint 2
                   -0.5    1.84;  %limit joint 3
-                -1.6   1.6;  %limit joint 4
-                -1.3   2.3;  %limit joint 5
-                -1.600   1.600]; %limit joint 6
+                -1.571   1.571;  %limit joint 4
+                -1.222   2.269;  %limit joint 5
+                -1.571   1.571]; %limit joint 6
     initial_velocity = [0;0;0;0;0;0]; %[joint1 ; joint2 ;...;joint6]
     final_velocity = [0;0;0;0;0;0]; %[joint1 ; joint2 ;...;joint6]
     maximum_velocity = [0.5;0.5;0.5;1;1;1];
@@ -78,8 +78,8 @@ function [coef_all,t_i_all,T_all,card,planning,env,robot] = NMotionPlaning(card_
     env.workspace = workspace; 
     
     env.targetzone = { {[750; 300;800],[0;-pi/2;pi],'T1'},  {[750; 100;800],[0;-pi/2;pi],'T2'},  {[750;-140;800],[0;-pi/2;pi],'T3'},...
-                       {[750;-360;800],[0;-pi/2;pi],'T4'},  {[750; 300;600],[0;-pi/2;pi],'T5'},  {[750; 100;600],[0;-pi/2;pi],'T6'},...
-                       {[750;-130;600],[0;-pi/2;pi],'T7'},  {[750;-350;600],[0;-pi/2;pi],'T8'},  {[750; 80;340],[0;-pi/2;pi],'T9'},...
+                       {[750;-360;800],[0;-pi/2;pi],'T4'},  {[750; 300;550],[0;-pi/2;pi],'T5'},  {[750; 100;550],[0;-pi/2;pi],'T6'},...
+                       {[750;-130;550],[0;-pi/2;pi],'T7'},  {[750;-350;550],[0;-pi/2;pi],'T8'},  {[750; 80;340],[0;-pi/2;pi],'T9'},...
                        {[750;-120;330],[0;-pi/2;pi],'T10'} };
     
 %% obstacle
@@ -101,7 +101,7 @@ function [coef_all,t_i_all,T_all,card,planning,env,robot] = NMotionPlaning(card_
     
 %% RRT Law
     Maximum_Eucl_distance = 0.4;
-    Maximum_Iteration = 400;
+    Maximum_Iteration = 200;
     Number_Random_Config = 60;
     Percentage_Greedness = 70;
     
@@ -291,7 +291,7 @@ function q_rand = Rand_Conf(q_lim,q_goal,i,Law)
         q_rand(:,j) = (q_lim(j,2)-q_lim(j,1)).*rand(n,1)+q_lim(j,1);
     end
     if mod(i,floor(k/floor(k*greedy/100))) == 0
-        q_rand(n,:) = q_goal;
+        q_rand(n,:) = q_goal(1,:);
     end
 
 end

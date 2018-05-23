@@ -396,7 +396,7 @@ def convert_pos(pos_list=[], mtx=[], homo=[], mode=1, inverse=False):
 
 def find_world_coor(blr='l', xy=[]):
 	if blr == 'l':
-		return [((xy[0] - 85) * -1), 505., ((xy[1] - 695) * -1) - 30]
+		return [((xy[0] - 85) * -1), 510., ((xy[1] - 695) * -1) - 30]
 		# return [((xy[0] - 115) * -1)-20, 473, ((xy[1]-670) * -1)+20]
 		# return [xy[0], 473, xy[1]]
 	elif blr == 'r':
@@ -404,9 +404,9 @@ def find_world_coor(blr='l', xy=[]):
 		# return [((-xy[0] - 23) * -1)-15, -473, ((xy[1] -690) * -1)+15]
 		# return [-xy[0], -473, xy[1]]
 		if -xy[1] + 690 + 7 > 875:
-			return [xy[0] + 70 + 20, -505., 870]
+			return [xy[0] + 70 + 20, -510., 870]
 		else:
-			return [xy[0] + 70 + 20, -505., -xy[1] + 690 + 7 - 15]
+			return [xy[0] + 70 + 20, -510.,-xy[1] + 690 + 7 - 15]
 	elif blr == 'br' or blr == 'bl' or blr == 'b':
 		# if (xy[1] + 10) * -1 <= 0:
 		#     return [(xy[0] + 296) - 70, ((xy[1] + 10) * -1) + 10, -50.]
