@@ -41,9 +41,9 @@ function [coef_all,t_i_all,T_all,card,planning,env,robot] = NMotionPlaning(card_
     q_limit = [  -0.79    3.93;  %limit joint 1
                  -1.05    0.79;  %limit joint 2
                   -0.5    1.84;  %limit joint 3
-                -1.571   1.571;  %limit joint 4
-                -1.222   2.269;  %limit joint 5
-                -1.571   1.571]; %limit joint 6
+                -1.6   1.6;  %limit joint 4
+                -1.3   2.3;  %limit joint 5
+                -1.600   1.600]; %limit joint 6
     initial_velocity = [0;0;0;0;0;0]; %[joint1 ; joint2 ;...;joint6]
     final_velocity = [0;0;0;0;0;0]; %[joint1 ; joint2 ;...;joint6]
     maximum_velocity = [0.5;0.5;0.5;1;1;1];
@@ -77,17 +77,17 @@ function [coef_all,t_i_all,T_all,card,planning,env,robot] = NMotionPlaning(card_
                             0,          0,          0,           0,        high,       high,       high,        high];
     env.workspace = workspace; 
     
-    env.targetzone = { {[800; 300;700],[0;-pi/2;pi],'T1'},  {[780; 80;750],[0;-pi/2;pi],'T2'},  {[770;-130;760],[0;-pi/2;pi],'T3'},...
-                       {[770;-330;730],[0;-pi/2;pi],'T4'},  {[800; 290;500],[0;-pi/2;pi],'T5'},  {[800; 80;500],[0;-pi/2;pi],'T6'},...
-                       {[790;-140;500],[0;-pi/2;pi],'T7'},  {[770;-380;550],[0;-pi/2;pi],'T8'},  {[770; 80;340],[0;-pi/2;pi],'T9'},...
-                       {[770;-120;330],[0;-pi/2;pi],'T10'} };
+    env.targetzone = { {[750; 300;800],[0;-pi/2;pi],'T1'},  {[750; 100;800],[0;-pi/2;pi],'T2'},  {[750;-140;800],[0;-pi/2;pi],'T3'},...
+                       {[750;-360;800],[0;-pi/2;pi],'T4'},  {[750; 300;600],[0;-pi/2;pi],'T5'},  {[750; 100;600],[0;-pi/2;pi],'T6'},...
+                       {[750;-130;600],[0;-pi/2;pi],'T7'},  {[750;-350;600],[0;-pi/2;pi],'T8'},  {[750; 80;340],[0;-pi/2;pi],'T9'},...
+                       {[750;-120;330],[0;-pi/2;pi],'T10'} };
     
 %% obstacle
 
     Project_Front = [  0.5*width+20, -0.5*width-55, -0.5*width-55, 0.5*width+20; %% (y,z)
-                            high,      high,           0,        0]; 
+                            high,      high,           -52,        -52];
     Project_Front_flag = [  0.5*width-26+40, -0.5*width+26-55, -0.5*width+26-55, 0.5*width-26+40; %% (y,z)
-                                 high,      high,           26,        26];
+                                 high,      high,           26-52-26,        26-52-26];
     Project_Top = [  0.8*length, 0.8*length, -0.8*length, -0.8*length; %% (x,y)
                       0.5*width+20, -0.5*width-55,  -0.5*width-55,   0.5*width+20 ]; 
     Project_Top_flag = [  0.8*length, 0.8*length, -0.8*length, -0.8*length; %% (x,y)
@@ -101,7 +101,7 @@ function [coef_all,t_i_all,T_all,card,planning,env,robot] = NMotionPlaning(card_
     
 %% RRT Law
     Maximum_Eucl_distance = 0.4;
-    Maximum_Iteration = 100;
+    Maximum_Iteration = 400;
     Number_Random_Config = 60;
     Percentage_Greedness = 70;
     
@@ -130,10 +130,13 @@ tic
             [planning.Path{p_ind},~]=PathPlan(robot.Home,robot.Set,robot,env,RRTLaw,p_ind);
             p_ind = p_ind+1;
         else
-            [planning.Path{p_ind},status]=PathPlan(robot.Set,srt_card_list{1},robot,env,RRTLaw,p_ind);
+            [via,status]=PathPlan(robot.Set,srt_card_list{1},robot,env,RRTLaw,p_ind);
+            via
             if ~status
+
                 srt_card_list(1) = [];
             else
+                planning.Path{p_ind} = via;
                 p_ind = p_ind+1;
                 %[planning.Path{p_ind},~]=PathPlan(srt_card_list{1},robot.Set,robot,env,RRTLaw,p_ind);
                 report_status(1,1,p_ind,srt_card_list{1},robot.Set);
@@ -199,6 +202,7 @@ function [via,status]=PathPlan(start,finish,robot,env,RRTLaw,p_ind)
 
     if ~(st_1 == 1 && st_2 == 1)
         report_status(st_1,st_2,p_ind,start,finish);
+        via = NaN;
         status = 0;
     else
         report_status(st_1,st_2,p_ind,start,finish);

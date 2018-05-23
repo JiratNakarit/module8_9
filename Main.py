@@ -16,32 +16,33 @@ class Main:
 
     class Const:
         # Const. Position
-        Home = [180,90,30,90,60,90]
-        Front = [0,80,30,90,60,90]
-        Right = [90,80,30,90,60,90]
+        Homei = [180, 70, 30, 90, 60, 90]
+        Home = [180, 90, 30, 90, 60, 90]
+
+        Front = [5, 80, 30, 90, 60, 90]  ##
+        Right = [90, 80, 30, 90, 60, 90]
 
         # Variable _____________________________________________________________________________________________________
-        CameraRight = [[-50,-70],
-                   [90,-30],[90,-10],[90,10],[90,25],
-                   [75,22],[70,10],[70,0],[70,-10],[70,-20],
-                   [60,-20],[60,-10],[70,0],[70,10],]
+        CameraRight = [[-50, -70],
+                       [90, -30], [90, -10], [90, 10], [90, 25],
+                       [75, 22], [70, 10], [70, 0], [70, -10], [70, -20],
+                       [60, -20], [60, -10], [55, 0], [55, 10], [55, 20], [55, 25]]
 
         CameraBase = [[-35, -50], [-17, -60], [0, -59], [17, -60], [35, -50]]
 
-        CameraLeft = [[-70,22],[-70,0],[-60,-10],[-60,-20],
-                      [-70,-20],[-70,-10],[-70,0],[-70,10],[-75,22],
-                      [-90,25],[-90,10],[-90,-10],[-90,-30],
-                      [-50,-70]]
+        CameraLeft = [[-70, 22], [-70, 0], [-60, 0], [-60, 10], [-60, -10], [-60, -20],
+                      [-70, -20], [-70, -10], [-70, 0], [-70, 10], [-75, 22],
+                      [-90, 25], [-90, 10], [-90, -10], [-90, -30]]
 
 
     def __init__(self,nomodeset=0):
         # Call class ___________________________________________________________________________________________________
         if nomodeset == 1:
-            self.KHONG = Board('COM4',115200)
+            self.KHONG = Board('COM7',115200)
         elif nomodeset == 2:
             self.CAMER = Dynamixel('COM3',1000000)
         elif nomodeset == 0:
-            self.KHONG = Board('COM4',115200)
+            self.KHONG = Board('COM7',115200)
             self.CAMER = Dynamixel('COM3',1000000)
         else:
             raise NameError('NoMode not found (your mode is ',nomodeset)
@@ -61,25 +62,19 @@ class Main:
         self.CAMER.TILT(pantilt[1])
         self.CAMER.WaitFinish([1,9])
 
-    def inv_pantilt(self,pantilt):
-        result = pantilt[::-1].copy()
-        for i in range(len(result)):
-            result[i][0] = result[i][0]*-1
-        return result[:7]
-
     def cmKhong(self,position):
         self.KHONG.SetPosition(position)
         time.sleep(0.1)
         #KHONG.WaitFinish()
 
-    def cam_clf(self,DATA_PACK,brl,pt):
+    def cam_clf(self, DATA_PACK, brl, pt):
 
         self.rtp.create_camera_instance(0)
 
-        #open camera and read model and predict get centroid of picture and 4 points of conner
+        # open camera and read model and predict get centroid of picture and 4 points of conner
         cardlist, midpointlist, cornerlist, realworldlist = self.rtp.one_time()
 
-        #get_homo, put pantile's list by pan is q1 and tilt is q2 , blr is scene ('l', 'r', 'blbr')
+        # get_homo, put pantile's list by pan is q1 and tilt is q2 , blr is scene ('l', 'r', 'blbr')
         homo = blr.get_homo(q1_=pt[0], q2_=pt[1], blr_=brl)
 
         # realworldlist is the function that convert centroid of picture to centroid of picture with respect to world coordinate
@@ -95,6 +90,14 @@ class Main:
 
         print(data_pack)
         return data_pack
+
+    def transform_angle(self,q_configuration):
+        q_homeconfig = [180,90,30,90,60,90]
+        q_symbol = [-1,-1,1,-1,1,-1]
+        q_transform = []
+        for i in range(0,6):
+            q_transform.append(q_homeconfig[i] + q_symbol[i]*q_configuration[i])
+        return q_transform
 
     # Loop camera(pan,tilt),classify, position _________________________________________________________________________
     def Step1FindCard(self):
@@ -146,6 +149,8 @@ class Main:
 
         # Set home position
         self.CAMER.PANTILT(0)
+        self.cmKhong(Main.Const.Homei)
+        time.sleep(8)
         self.cmKhong(Main.Const.Home)
         ENDT_CLF = time.time() - T_CLF
         cv2.destroyAllWindows()
@@ -159,12 +164,16 @@ class Main:
         ENDT_PLN = time.time() - T_PLN
         return PATH,ENDT_PLN
 
-
 # Command Khong ________________________________________________________________________________________________________
     def Step3CommandKhong(self,PATH):
         T_LLV = time.time()
+        temp = 0
         #Traject
         pose = [180,90,30,90,90,60]
+        manual = [[119,-13,66,-78,59,77],[100,-5,55,-47,44,46],
+                  [76,-6,56,56,47,-55],[56,-15,69,81,65,-79],
+                  [119,-19,47,-45,73,36],[100,-12,35,-17,68,14],
+                  [76,-13,35,21,70,-17],[58,-16,45,50,74,-41]]
         old_pose = [90,60,90]
         for path in range(len(PATH)):
             #Sub Traject
@@ -182,9 +191,13 @@ class Main:
                     self.cmKhong(pose)
                     print('via: ',pose)
             if (path+1)%2 ==0:
-                time.sleep(2)
                 if (path+1)%4 == 0:
+                    time.sleep(3)
+                    #manual[temp][5] = via[5]
+                    self.cmKhong(self.transform_angle(manual[temp]))
+                    time.sleep(1)
                     self.KHONG.SetGrip(0)
+                    temp += 1
                 else:
                     self.KHONG.SetGrip(1)
 
@@ -211,3 +224,4 @@ if __name__ == '__main__':
     print('1. Time for find card: ',T_1)
     print('2. Time for Planning : ',T_2)
     print('3. Time for Running  : ',T_3)
+    print('4. Time All  : ', (T_1+T_2+T_3),' s')
